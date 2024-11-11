@@ -1,0 +1,8 @@
+.env
+__pycache__/
+docs/
+VE_crowe/
+VoiceNotes/
+.env
+personal_docs/
+Clients list.xlsx
