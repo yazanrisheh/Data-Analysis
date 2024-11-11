@@ -21,7 +21,8 @@ research_task = Task(
 )
 data_entry_task = Task(
     description="""
-        Verify the existence of the company {client_name} in the provided Excel sheet.
+        Verify the existence of the company {client_name} that is operating in the sector {sector_of_operation} in the
+        provided Excel sheet.
         For each branch location provided by the research_agent, check if the corresponding country column exists in the
         Excel sheet, starting from the column after 'AH'.
         
@@ -36,6 +37,7 @@ data_entry_task = Task(
         Your final task is to save the updated Excel file with all data entries completed.
     """,
     agent=data_entry_agent,
-    expected_output="An updated Excel file with '1' entered in appropriate columns for each branch country location found by the research_agent.",
+    expected_output="""An updated Excel file with '1' entered in appropriate columns for each branch country location of
+    {client_name} found by the research_agent.""",
     output_file="Updated_Clients_List.xlsx"
 )
