@@ -14,3 +14,4 @@ def search_tool(query: str):
 
 
 # search_tool = SerperDevTool()
+code_tool = CodeInterpreterTool()

@@ -39,5 +39,5 @@ data_entry_task = Task(
     agent=data_entry_agent,
     expected_output="""An updated Excel file with '1' entered in appropriate columns for each branch country location of
     {client_name} found by the research_agent.""",
-    output_file="Updated_Clients_List.xlsx"
+    output_file="Updated_Clients_Listtt.csv"
 )

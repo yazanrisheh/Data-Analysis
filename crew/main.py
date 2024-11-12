@@ -2,6 +2,7 @@ from agents import data_entry_agent, research_agent
 from tasks import data_entry_task, research_task
 from crewai import Crew, Process
 import pandas as pd
+import csv
 
 # Load the Excel file into a DataFrame just once
 file_path = "Clients list Test.xlsx"
@@ -23,6 +24,7 @@ for row in df.itertuples(index=False):
         agents=[research_agent, data_entry_agent],  # Define the agents in advance
         tasks=[research_task, data_entry_task],
         process=Process.sequential,
+        memory=True,
         verbose=True
     )
     
@@ -31,4 +33,4 @@ for row in df.itertuples(index=False):
     print(result)
 
 # After processing, save the DataFrame back to Excel or any desired format if needed
-df.to_excel("Updated_Clients_List.xlsx", index=False)
+df.to_csv("Updated_Clients_List.csv", index=False)

@@ -1,4 +1,4 @@
-from tools import search_tool, CodeInterpreterTool
+from tools import search_tool, code_tool
 from dotenv import load_dotenv
 
 from crewai import Agent
@@ -20,7 +20,6 @@ research_agent = Agent(
 """,
   tools=[search_tool],
   llm=llm,  # Optional
-  max_iter=15,  # Optional
   verbose=True,  # Optional
 )
 
@@ -35,9 +34,8 @@ You are a data entry specialist that inputs the value 1 if the company {client_n
 exists in the country location thats available in the excel file. If it does not exist then start from row 2 to create
 a new column for that country location after the column 'AH' and add the value 1
 """,
-  tools=[CodeInterpreterTool()],
+  tools=[code_tool],
   llm=llm,  # Optional
-  max_iter=15,  # Optional
   verbose=True,  # Optional
   allow_code_execution=True
 )
