@@ -5,8 +5,7 @@ import pandas as pd
 import csv
 
 # Load the Excel file into a DataFrame just once
-file_path = "Clients list Test.xlsx"
-df = pd.read_excel(file_path)
+df = pd.read_excel(r'C:\Users\Asus\Documents\Crowe\crew\Clients list Test.xlsx', header=1)
 
 # Iterate over each row, starting from row 3 to skip the empty row (row 1) and header row (row 2)
 for row in df.itertuples(index=False):
@@ -18,7 +17,7 @@ for row in df.itertuples(index=False):
         "client_name": client_name,
         "sector_of_operation": sector_of_operation,
     }
-    
+
     # Call the crew with the prepared inputs
     crew = Crew(
         agents=[research_agent, data_entry_agent],  # Define the agents in advance

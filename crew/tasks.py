@@ -24,7 +24,7 @@ data_entry_task = Task(
         Verify the existence of the company {client_name} that is operating in the sector {sector_of_operation} in the
         provided Excel sheet.
         For each branch location provided by the research_agent, check if the corresponding country column exists in the
-        Excel sheet, starting from the column after 'AH'.
+        Excel sheet called Clients list Test.xlsx, starting from the column after 'AH'.
         
         For each country:
         - If the column for the country exists, input the number '1' in the respective row under that country.
@@ -39,5 +39,6 @@ data_entry_task = Task(
     agent=data_entry_agent,
     expected_output="""An updated Excel file with '1' entered in appropriate columns for each branch country location of
     {client_name} found by the research_agent.""",
+    context = [research_task],
     output_file="Updated_Clients_Listtt.csv"
 )

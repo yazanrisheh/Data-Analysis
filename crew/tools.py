@@ -10,7 +10,7 @@ tavily_client = TavilyClient()
 @tool("Tavily Search Tool")
 def search_tool(query: str):
     """Tool for searching online about companies and their locations"""
-    return tavily_client.search(query, search_depth="advanced")
+    return tavily_client.search(query, search_depth="advanced", max_results=40)
 
 
 # search_tool = SerperDevTool()
