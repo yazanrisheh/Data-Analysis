@@ -50,7 +50,6 @@ country_normalization_map = {
     "united kingdom": "United Kingdom"
 }
 
-
 def normalize_country_name(country: str) -> str:
     if not country or not isinstance(country, str):
         return country
@@ -59,7 +58,6 @@ def normalize_country_name(country: str) -> str:
     # Replace with the mapped name if available
     normalized = country_normalization_map.get(lower_country, country)
     return normalized
-
 
 class Company(BaseModel):
     Branches: List[str]
@@ -90,10 +88,17 @@ company_research_task = Task(
     """,
     output_pydantic=Company
 )
-path = r"C:\Users\Asus\Documents\Crowe\crew\clients_test.xlsx"
+
+path = r"C:\Users\Asus\Documents\Crowe\crew\clients_list_starter_file.xlsx"
 
 # Load the Excel file into a DataFrame, with headers on the second row
 df = pd.read_excel(path, header=1)
+
+# Ensure these columns exist or create them if they do not:
+if "Number of Other Countries" not in df.columns:
+    df["Number of Other Countries"] = pd.NA
+if "Other Countries" not in df.columns:
+    df["Other Countries"] = pd.NA
 
 # Columns in Excel (adjust if needed):
 hq_column_name = "Country of HQ location"    # Ensure this matches your actual header
@@ -119,7 +124,7 @@ for index, row in df.iterrows():
     )
     result = crew.kickoff(inputs=inputs)
 
-    # Add a 5-second delay after each request to prevent rate limit issues
+    # Add a delay after each request to prevent rate limit issues
     time.sleep(15)
 
     hq = result["HQ"]
@@ -132,52 +137,67 @@ for index, row in df.iterrows():
     normalized_branches = [normalize_country_name(b) for b in branches]
 
     # Update HQ column if empty and we have a valid HQ
-    if (hq_column_name in df.columns) and pd.isna(df.at[index, hq_column_name]) and hq:
-        # Only write HQ if it's in your standardized list or if you just want to trust normalization
-        if hq in countries:
-            df.at[index, hq_column_name] = hq
+    if (hq_column_name in df.columns) and (pd.isna(df.at[index, hq_column_name]) or str(df.at[index, hq_column_name]).strip() == "") and hq:
+        df.at[index, hq_column_name] = hq
 
     # Update Sector column if empty and we have a valid sector
-    if (sector_column_name in df.columns) and pd.isna(df.at[index, sector_column_name]) and sector:
+    if (sector_column_name in df.columns) and (pd.isna(df.at[index, sector_column_name]) or str(df.at[index, sector_column_name]).strip() == "") and sector:
         df.at[index, sector_column_name] = sector
 
-    # For branches, mark "1" in the respective country columns if found in normalized_branches
+    # Identify which branches are in the known countries list
+    known_branch_countries = set(countries)
+    known_branches = [b for b in normalized_branches if b in known_branch_countries]
+    unknown_branches = [b for b in normalized_branches if b not in known_branch_countries]
+
+    # For known branches, mark "1" in the respective country columns if found
     for country in countries:
-        if (country in df.columns) and (country in normalized_branches) and pd.isna(df.at[index, country]):
+        if (country in df.columns) and (country in known_branches) and (pd.isna(df.at[index, country]) or str(df.at[index, country]).strip() == ""):
             df.at[index, country] = "1"
+
+    # For unknown branches, place the count in "Number of Other Countries" and the names in "Other Countries"
+    if unknown_branches:
+        df.at[index, "Number of Other Countries"] = len(unknown_branches)
+        df.at[index, "Other Countries"] = ", ".join(unknown_branches)
+    else:
+        df.at[index, "Number of Other Countries"] = pd.NA
+        df.at[index, "Other Countries"] = pd.NA
+
+# Replace <NA> values with empty strings for columns that may contain them
+df["Number of Other Countries"] = df["Number of Other Countries"].fillna("")
+df["Other Countries"] = df["Other Countries"].fillna("")
 
 # Now use openpyxl to preserve formatting
 wb = load_workbook(path)
 sheet = wb.active
 
-# Adjust if data starts at row 3 in Excel
+# If headers start at row 2, data starts at row 3 in Excel
 for index, row in df.iterrows():
-    excel_row = index + 3  # If header=1, index=0 corresponds to row 3 in Excel
+    excel_row = index + 3
 
-    # Write HQ if we set it in df
+    # Write HQ if set
     if hq_column_name in df.columns:
         hq_val = row[hq_column_name]
-        if pd.notna(hq_val):
-            # HQ is column D, adjust if needed
-            sheet["D" + str(excel_row)] = hq_val
+        # hq_val is now guaranteed to not be <NA>
+        sheet["D" + str(excel_row)] = hq_val
 
-    # Write Sector if we set it in df
+    # Write Sector if set
     if sector_column_name in df.columns:
         sector_val = row[sector_column_name]
-        if pd.notna(sector_val):
-            # Sector is column H, adjust if needed
-            sheet["H" + str(excel_row)] = sector_val
+        sheet["H" + str(excel_row)] = sector_val
 
-    # Write branch countries (K to AH)
-    start_col = 11  # K is the 11th column (A=1, B=2, ..., K=11)
+    # Write known countries (K to AH)
+    start_col = 11  # K=11
     for idx, country in enumerate(countries):
         if country in df.columns:
             country_val = row[country]
-            if pd.notna(country_val):
-                col_letter = get_column_letter(start_col + idx)
-                sheet[col_letter + str(excel_row)] = country_val
+            sheet[get_column_letter(start_col + idx) + str(excel_row)] = country_val
 
-# Save the updated workbook
+    # Write the number of other countries to AI (35th column, after AH which is 34)
+    sheet["AI" + str(excel_row)] = row["Number of Other Countries"]
+
+    # Write the other countries to AJ (36th column)
+    sheet["AJ" + str(excel_row)] = row["Other Countries"]
+
 wb.save(r'C:\Users\Asus\Documents\Crowe\crew\clients_test_updated.xlsx')
 
 print("Processing complete. The updated file with preserved formatting has been saved.")

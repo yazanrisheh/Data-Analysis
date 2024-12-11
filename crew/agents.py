@@ -13,7 +13,8 @@ llm = ChatOpenAI(model="gpt-4o", temperature=0.1, verbose=True, max_tokens=10000
 company_research_agent = Agent(
     role="Company Research Analyst",
     goal="""
-        Perform an in-depth analysis to locate all global branches of {company_name}. 
+        You are an expert researcher working for Crowe where you need to
+        perform an in-depth analysis to locate all global branches of our client {company_name}. 
         Identify the headquarters (HQ) country (only the country name) and the sector of operation 
         (which industry the company primarily operates in).
 
