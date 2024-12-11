@@ -1,4 +1,4 @@
-from tools import search_tool, code_tool
+from tools import search_tool
 from dotenv import load_dotenv
 
 from crewai import Agent
@@ -7,35 +7,28 @@ from langchain_groq import ChatGroq
 
 load_dotenv()
 
-llm = ChatOpenAI(model = "gpt-4o-mini", temperature = 0.2, verbose = True)
-# llm = ChatGroq(model = "llama3-8b-8192", temperature = 0.2, verbose = True)
+llm = ChatOpenAI(model="gpt-4o", temperature=0.1, verbose=True, max_tokens=10000)
+# llm = ChatGroq(model="mixtral-8x7b-32768", temperature=0.1, verbose=True)
 
-research_agent = Agent(
-  role='Market Research Analyst',
-  goal="""Search for the company name {client_name} whose sector of operation is {sector_of_operation} and find
-    the country location for its branches worldwide""",
-  backstory="""
-    An analytical researcher skilled in gathering and verifying {client_name} working in the sector {sector_of_operation} 
-    location data, with an eye for accurate and comprehensive information on global branch distributions.
-""",
-  tools=[search_tool],
-  llm=llm,  # Optional
-  verbose=True,  # Optional
-)
+company_research_agent = Agent(
+    role="Company Research Analyst",
+    goal="""
+        Perform an in-depth analysis to locate all global branches of {company_name}. 
+        Identify the headquarters (HQ) country (only the country name) and the sector of operation 
+        (which industry the company primarily operates in).
 
-
-data_entry_agent = Agent(
-  role='Data Entry Specialist',
-  goal="""Input the number 1 in the excel sheet if the research_agent found the company
-    {client_name} that is working in the sector {sector_of_operation} and the country location for all its branches 
-    worldwide""",
-  backstory="""
-You are a data entry specialist that inputs the value 1 if the company {client_name} in the sector {sector_of_operation} 
-exists in the country location thats available in the excel file. If it does not exist then start from row 2 to create
-a new column for that country location after the column 'AH' and add the value 1
-""",
-  tools=[code_tool],
-  llm=llm,  # Optional
-  verbose=True,  # Optional
-  allow_code_execution=True
+        Provide the data in the form of:
+        - A list of countries where the company has operations (branches).
+        - The country where the HQ is located.
+        - The sector or industry of operation.
+    """,
+    backstory="""
+        You are a highly analytical researcher specializing in gathering accurate and comprehensive 
+        information about the global operations of companies. You excel at identifying branch locations, 
+        headquarters, and their industries. Your expertise ensures that data about {company_name}, 
+        operating in the sector {sector_of_operation}, is precise and reliable.
+    """,
+    tools=[search_tool],
+    llm=llm,  # Optional
+    verbose=True,  # Optional
 )
